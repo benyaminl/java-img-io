@@ -16,6 +16,7 @@ public class JavaApplication13IMGBLOB {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        DB.init(); // Try to Open Connection before do other things..
         (new FormShowImage()).setVisible(true);
     }
     

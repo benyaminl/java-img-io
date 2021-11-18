@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,24 +40,43 @@ public class ImagePanel extends javax.swing.JPanel {
     
     public void setImage(String location) {
         this.loc = location;
+        this.loadImage();
+    }
+    
+    public void setImage(byte[] img) {
+        ByteArrayInputStream in = new ByteArrayInputStream(img);
+        try {
+            this.img = ImageIO.read(in);
+        } catch(Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+        this.revalidate();
+        this.repaint();
     }
     
     protected void loadImage() {
         try {
             File f = new File(loc);
+            // Baca File dari Folder
             this.img = ImageIO.read(f);
         } catch(Exception e) {
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
         this.revalidate();
+        this.repaint();
     }
     
     public byte[] toBlob() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            ImageIO.write((BufferedImage)this.img, "jpg", baos);
+            // CHeck ini ada transparansi apa ga, kalau ga ada diset JPG
+            if (this.img.getTransparency() == java.awt.Transparency.OPAQUE) {
+                ImageIO.write((BufferedImage)this.img, "jpg", baos);
+            } else { // Kalau ada maka PNG
+                ImageIO.write((BufferedImage)this.img, "png", baos);
+            }
         } catch(Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+            JOptionPane.showMessageDialog(this, e.toString());
         }
         byte[] data = baos.toByteArray();
         return data;
@@ -70,7 +90,7 @@ public class ImagePanel extends javax.swing.JPanel {
             o.write(d, 0, d.length);
             o.close();
         } catch(Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+            JOptionPane.showMessageDialog(this, e.toString());
         }
     }
     

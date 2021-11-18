@@ -35,58 +35,73 @@ public class DB {
     }
     
     public static ArrayList<String[]> query(String sql) {
-        return DB.query(sql,null);
+        return query(sql, new Object[]{});
     } 
     
     public static ArrayList<String[]> query(String sql, 
             Object[] data) {
         ArrayList<String[]> resultData = new ArrayList<>();
-        if (data == null) {
-            try {
-                Statement s = DB.c.createStatement();
-                ResultSet result = s.executeQuery(sql);
-                ResultSetMetaData md = result.getMetaData();
-                int totalColumn = md.getColumnCount();
-                
-                while(result.next()) {// Ambil baris selanjutnya!
-                    // Create new Array List temp to add to Global ArrayList
-                    String[] temp = new String[totalColumn];
-                    for (int i = 1; i <= totalColumn; i++) {// Isikan semua 
-                        // Kolom ke dalam temp 
-                        temp[i-1] = String.valueOf(result.getObject(i));
-                    }
-                    resultData.add(temp);
-                }
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null,e.getMessage());
+
+        try {
+            // Contoh Prepared Statement
+            // insert into posts(title, body) VALUES(?, ?)
+            // new Object[] {"Judul","asdasd"} 
+            PreparedStatement s = DB.c.prepareStatement(sql);
+            for (int i = 0; i < data.length; i++) {
+                s.setObject(i+1, data[i]);
             }
-        } else {
-            try {
-                // Contoh Prepared Statement
-                // insert into posts(title, body) VALUES(?, ?)
-                // new Object[] {"Judul","asdasd"} 
-                PreparedStatement s = DB.c.prepareStatement(sql);
-                for (int i = 0; i < data.length; i++) {
-                    s.setObject(i+1, data[i]);
+            ResultSet result = s.executeQuery();
+            ResultSetMetaData md = result.getMetaData();
+            int totalColumn = md.getColumnCount();
+
+            while(result.next()) {// Ambil baris selanjutnya!
+                // Create new Array List temp to add to Global ArrayList
+                String[] temp = new String[totalColumn];
+                for (int i = 1; i <= totalColumn; i++) {// Isikan semua 
+                    // Kolom ke dalam temp 
+                    temp[i-1] = String.valueOf(result.getObject(i));
                 }
-                ResultSet result = s.executeQuery();
-                ResultSetMetaData md = result.getMetaData();
-                int totalColumn = md.getColumnCount();
-                
-                while(result.next()) {// Ambil baris selanjutnya!
-                    // Create new Array List temp to add to Global ArrayList
-                    String[] temp = new String[totalColumn];
-                    for (int i = 1; i <= totalColumn; i++) {// Isikan semua 
-                        // Kolom ke dalam temp 
-                        temp[i-1] = String.valueOf(result.getObject(i));
-                    }
-                    resultData.add(temp);
-                }
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null,e.getMessage());
+                resultData.add(temp);
             }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,e.toString());
         }
         return resultData;
+    }
+    
+    public static ArrayList<Object[]> queryObject(String sql, 
+            Object[] data) {
+        ArrayList<Object[]> resultData = new ArrayList<>();
+
+        try {
+            // Contoh Prepared Statement
+            // insert into posts(title, body) VALUES(?, ?)
+            // new Object[] {"Judul","asdasd"} 
+            PreparedStatement s = DB.c.prepareStatement(sql);
+            for (int i = 0; i < data.length; i++) {
+                s.setObject(i+1, data[i]);
+            }
+            ResultSet result = s.executeQuery();
+            ResultSetMetaData md = result.getMetaData();
+            int totalColumn = md.getColumnCount();
+
+            while(result.next()) {// Ambil baris selanjutnya!
+                // Create new Array List temp to add to Global ArrayList
+                Object[] temp = new Object[totalColumn];
+                for (int i = 1; i <= totalColumn; i++) {// Isikan semua 
+                    // Kolom ke dalam temp 
+                    temp[i-1] = result.getObject(i);
+                }
+                resultData.add(temp);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,e.toString());
+        }
+        return resultData;
+    }
+    
+    public static ArrayList<Object[]> queryObject(String sql) {
+        return queryObject(sql, new Object[] {});
     }
     
     public static boolean insert(String sql, Object[] data) {
@@ -95,11 +110,11 @@ public class DB {
         try {
             PreparedStatement s = DB.c.prepareStatement(sql);
             for (int i = 0; i < data.length; i++) {
-                if (data[i] instanceof Blob) {
-                    s.setBlob(i+1, (Blob)data[i]);
-                } else {
-                    s.setObject(i+1, data[i]);
-                }
+//                if (data[i] instanceof Blob) {
+//                    s.setBlob(i+1, (Blob)data[i]);
+//                } else {
+                s.setObject(i+1, data[i]);
+//                }
             }
             s.execute();
         } catch(Exception e) {
@@ -119,7 +134,7 @@ public class DB {
             // https://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html#executeUpdate--
             affectedRow = s.executeUpdate();
         } catch(Exception e) {
-            JOptionPane.showMessageDialog(null,e.getMessage());
+            JOptionPane.showMessageDialog(null,e.toString());
         }        
         return affectedRow;
     }
@@ -132,7 +147,7 @@ public class DB {
         try {
             DB.c.close();
         } catch(Exception e) {
-            JOptionPane.showMessageDialog(null,e.getMessage());    
+            JOptionPane.showMessageDialog(null,e.toString());    
         }
     }
 }
